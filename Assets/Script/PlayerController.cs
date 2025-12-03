@@ -5,23 +5,48 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Reference")]
-    public InputManager iM;
     public Transform cameraTransform;
     public Rigidbody playerRigidbody;
+    public InputManager iM;
+    public AnimationManager animManager;
+    public CameraManager cameraManager;
 
     [Header("Movement")]
     public Vector3 moveDir;
     public float moveSpeed =7;
     public float rotationSpeed =7;
+    private float moveAmount;
 
+    [Header("Falling&Jumping")]
+    public bool isGrounded;
+    public bool isJumped;
+    public float jumpHeight;
+    public float inAirTimer;
+    public float Gravity;
+    public float fallingSpeed;
+    public LayerMask groundLayer;
+
+    private void Start()
+    {
+        inAirTimer = Gravity;
+    }
     public void Update()
     {
-        
+        moveAmount = Mathf.Clamp01(Mathf.Abs(iM.getMoveDir().x) + Mathf.Abs(iM.getMoveDir().y));
+        animManager.HandleAnimatorValues(0,moveAmount);
+        isGrounded = CheckIfGrounded();
+        CheckIfJumped();
     }
     public void FixedUpdate()
     {
-        HandleMovement();
+        HandleFalling();
         HandleRotation();
+        HandleMovement();
+        HandleJump();
+    }
+    private void LateUpdate()
+    {
+        cameraManager.HandleAllCameraFunction();
     }
     public void HandleMovement()
     {
@@ -46,5 +71,55 @@ public class PlayerController : MonoBehaviour
         Quaternion playerRot = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
         transform.rotation = playerRot;
+    }
+
+    public void HandleFalling()
+    {
+        animManager.SetIsFalling(!isGrounded);
+        if(!isGrounded && !isJumped)
+        {
+            inAirTimer += Time.deltaTime;
+            //playerRigidbody.AddForce(transform.forward * lerpingVelocity);
+            playerRigidbody.AddForce(-Vector3.up * fallingSpeed * inAirTimer);
+        }
+        else
+        {
+            inAirTimer = Gravity;
+        }
+    }
+
+    public bool CheckIfGrounded()
+    {
+        RaycastHit hit;
+        Vector3 raycastOrigin = transform.position;
+        raycastOrigin.y += 0.25f;
+        if (Physics.SphereCast(raycastOrigin, 0.15f, -Vector3.up, out hit, groundLayer))
+            return true;        
+        else
+            return false;
+
+    }
+    private void CheckIfJumped()
+    {
+        if (iM.getJumpPressed() && isGrounded)
+        {
+            isJumped = true;
+            Invoke("DisableJump", 0.25f);
+        }
+    }
+    public void HandleJump()
+    {
+        if (isJumped)
+        {
+            float JumpingVelocity = Mathf.Sqrt(-2 * -Gravity * jumpHeight) ;
+            Vector3 playerVelocity = moveDir;
+            playerVelocity.y = JumpingVelocity;
+            playerRigidbody.velocity = playerVelocity;
+        }
+    }
+
+    public void DisableJump()
+    {
+        isJumped = false;
     }
 }
