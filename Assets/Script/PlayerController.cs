@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public float Gravity;
     public float fallingSpeed;
     public LayerMask groundLayer;
+    public float rayCastOffset = 1;
 
     private void Start()
     {
@@ -92,7 +93,7 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit hit;
         Vector3 raycastOrigin = transform.position;
-        raycastOrigin.y += 0.25f;
+        raycastOrigin.y += rayCastOffset;
         if (Physics.SphereCast(raycastOrigin, 0.15f, -Vector3.up, out hit, groundLayer))
             return true;        
         else
@@ -121,5 +122,16 @@ public class PlayerController : MonoBehaviour
     public void DisableJump()
     {
         isJumped = false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3 raycastOrigin = transform.position;
+        raycastOrigin.y += rayCastOffset; // offset
+        float radius = 0.15f;
+        Vector3 direction = -Vector3.up;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(raycastOrigin + direction * 1f, radius);
     }
 }
