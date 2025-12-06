@@ -16,7 +16,7 @@ public class PlayerHUD : MonoBehaviour
 
     public void SetObjectiveText(int point)
     {
-        objectiveText.text = "Collect all the spheres : " + point + "/ 5";
+        objectiveText.text = "Collect all the boxes : " + point + "/ 5";
     }
     public void SetEndGameText(string text)
     {

@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
 
         if (wasGrounded && isGrounded) //Snap To ground if when standing on new surface
         {
-            SnapAlignWithSurface();
+            //SnapAlignWithSurface();
             Debug.Log("Snap Align player");
         }
 

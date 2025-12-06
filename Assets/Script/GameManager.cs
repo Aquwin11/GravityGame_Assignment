@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public GameObject endGameCanvas;
     public int Points;
     public bool startGame = true;
-
+    public int SceneIndexToReload = 1;
    
     private void OnEnable()
     {
@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
 
     public void ReloadLevel()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(SceneIndexToReload);
         Time.timeScale = 1;
     }
 }

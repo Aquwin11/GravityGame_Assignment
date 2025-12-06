@@ -40,8 +40,8 @@ public class CameraManager : MonoBehaviour
 
     private void FollowTarget()
     {
-        Vector3 targetPos = Vector3.SmoothDamp(transform.position, playerTransform.position,
-            ref cameraFollowVelocity, cameraFollowSpeed);
+
+        Vector3 targetPos = Vector3.Lerp(transform.position, playerTransform.position, cameraFollowSpeed);
         transform.position = targetPos;
     }
 
@@ -49,14 +49,18 @@ public class CameraManager : MonoBehaviour
     {
         Vector3 rotation;
         Quaternion targetRotation;
-        lookAngle += (inputManager.getCameraDir().x * cameraLookSpeed);
-        pivotAngle -= (inputManager.getCameraDir().y * cameraLookSpeed);
+        //{Change from previous Commit}:  forgot to add delta Time
+        lookAngle += (inputManager.getCameraDir().x * cameraLookSpeed * Time.deltaTime);
+        pivotAngle -= (inputManager.getCameraDir().y * cameraLookSpeed * Time.deltaTime);
         pivotAngle = Mathf.Clamp(pivotAngle, minRotation, maxRotation);
-
-        rotation = Vector3.zero;
+        /*rotation = Vector3.zero;
         rotation.y = lookAngle;
         targetRotation = Quaternion.Euler(rotation);
-        transform.rotation = targetRotation;
+        transform.rotation = targetRotation;*/
+        Quaternion gravityAlign = Quaternion.FromToRotation(Vector3.up, playerTransform.up);
+        Quaternion yawRotation = Quaternion.AngleAxis(lookAngle, playerTransform.up);//rotate around playersY
+        transform.rotation = Quaternion.Slerp(transform.rotation, yawRotation * gravityAlign, 0.2f);
+
 
         rotation = Vector3.zero;
         rotation.x = pivotAngle;
@@ -78,7 +82,14 @@ public class CameraManager : MonoBehaviour
         }
         if (Mathf.Abs(targetPosition) < minimumCollisionOffset)
             targetPosition -= minimumCollisionOffset;
-        cameraVectorPosition.z = Mathf.Lerp(cameraTransform.localPosition.z, targetPosition,0.2f);
+        cameraVectorPosition.z = Mathf.Lerp(cameraTransform.localPosition.z, targetPosition,2.5f);
         cameraTransform.localPosition = cameraVectorPosition;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3 direction = cameraTransform.position - cameraPivot.position;
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(cameraTransform.position, cameraCollisionRadius * 5);
     }
 }
